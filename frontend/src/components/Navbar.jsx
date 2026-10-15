@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur">
@@ -17,12 +17,9 @@ export default function Navbar() {
             <Bell className="h-4 w-4" />
           </button>
           <div className="text-right">
-            <div className="text-sm font-medium text-slate-100">{user?.full_name || 'Operator'}</div>
-            <div className="text-xs text-slate-400">{user?.role || 'security'}</div>
+            <div className="text-sm font-medium text-slate-100">{user?.full_name || 'Demo Operator'}</div>
+            <div className="text-xs text-slate-400">{user?.role || 'admin'}</div>
           </div>
-          <button onClick={logout} className="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white">
-            Logout
-          </button>
         </div>
       </div>
     </header>

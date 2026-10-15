@@ -1,50 +1,23 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { getCurrentUser } from '../api/auth';
+import { createContext, useContext, useMemo } from 'react';
 
 const AuthContext = createContext();
 
+// Temporary demo user so judges can explore the UI without signing in.
+const DEMO_USER = {
+  id: 0,
+  email: 'demo@psms.local',
+  full_name: 'Demo Operator',
+  role: 'admin',
+};
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(localStorage.getItem('psms_token')));
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem('psms_token');
-    if (!token) {
-      setLoading(false);
-      setUser(null);
-      setIsAuthenticated(false);
-      return;
-    }
-
-    getCurrentUser()
-      .then((me) => {
-        setUser(me);
-        setIsAuthenticated(true);
-      })
-      .catch(() => {
-        localStorage.removeItem('psms_token');
-        setUser(null);
-        setIsAuthenticated(false);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
   const value = useMemo(() => ({
-    user,
-    isAuthenticated,
-    loading,
-    login: (token, profile) => {
-      localStorage.setItem('psms_token', token);
-      setUser(profile);
-      setIsAuthenticated(true);
-    },
-    logout: () => {
-      localStorage.removeItem('psms_token');
-      setUser(null);
-      setIsAuthenticated(false);
-    },
-  }), [user, isAuthenticated, loading]);
+    user: DEMO_USER,
+    isAuthenticated: true,
+    loading: false,
+    login: () => {},
+    logout: () => {},
+  }), []);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

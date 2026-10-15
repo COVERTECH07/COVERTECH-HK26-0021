@@ -1,0 +1,42 @@
+from datetime import timedelta
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from ..auth import authenticate_user, create_access_token, get_current_user, get_password_hash
+from ..database import get_db
+from ..models import User
+from ..schemas import Token, UserCreate, UserLogin, UserRead
+
+router = APIRouter(prefix='/auth', tags=['auth'])
+
+
+@router.post('/register', response_model=UserRead)
+def register_user(payload: UserCreate, db: Session = Depends(get_db)):
+    existing = db.query(User).filter(User.email == payload.email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail='Email already registered')
+    user = User(
+        email=payload.email,
+        full_name=payload.full_name,
+        password_hash=get_password_hash(payload.password),
+        role=payload.role,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.post('/login', response_model=Token)
+def login_user(payload: UserLogin, db: Session = Depends(get_db)):
+    user = authenticate_user(db, payload.email, payload.password)
+    if user is None:
+        raise HTTPException(status_code=401, detail='Invalid email or password')
+    access_token = create_access_token({'sub': user.email}, timedelta(minutes=120))
+    return {'access_token': access_token, 'token_type': 'bearer'}
+
+
+@router.get('/me', response_model=UserRead)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user

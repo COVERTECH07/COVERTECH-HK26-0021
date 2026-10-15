@@ -15,8 +15,8 @@ create_db_and_tables()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    # Support Vercel production and preview deployments while keeping local origins configurable.
-    allow_origin_regex=r"https://[a-zA-Z0-9-]+(?:-[a-zA-Z0-9-]+)?\.vercel\.app",
+    # Permit Vercel production and preview URLs; keep the origin restricted to Vercel domains.
+    allow_origin_regex=r"https://[a-zA-Z0-9.-]+\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

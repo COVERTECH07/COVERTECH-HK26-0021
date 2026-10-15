@@ -8,11 +8,13 @@ import Analytics from './pages/Analytics';
 import Heatmap from './pages/Heatmap';
 import Settings from './pages/Settings';
 
-// Auth temporarily disabled for judges demo so the prototype is reachable without login.
+// Hackathon demo: skip login/signup and open the dashboard directly.
 function AppShell() {
   return (
     <Router>
       <Routes>
+        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="/signup" element={<Navigate to="/" replace />} />
         <Route element={<Layout />}>
           <Route index element={<LiveMonitor />} />
           <Route path="/incidents" element={<Incidents />} />

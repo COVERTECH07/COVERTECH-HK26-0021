@@ -1,4 +1,8 @@
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+const DEFAULT_API_URL = import.meta.env.PROD
+  ? 'https://covertech-psms-api-prod.onrender.com'
+  : 'http://localhost:8000';
+
+const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/$/, '');
 
 async function apiRequest(path, options = {}) {
   const token = localStorage.getItem('psms_token');
@@ -18,7 +22,7 @@ async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText || 'Request failed');
+    throw new Error(errorText || `Request failed (${response.status})`);
   }
 
   const contentType = response.headers.get('content-type') || '';

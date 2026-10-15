@@ -12,8 +12,6 @@ export default function App() {
     <AlertProvider>
       <Router>
         <Routes>
-          <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="/signup" element={<Navigate to="/" replace />} />
           <Route element={<Layout />}>
             <Route index element={<LiveMonitor />} />
             <Route path="/incidents" element={<Incidents />} />

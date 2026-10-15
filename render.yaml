@@ -17,4 +17,11 @@ services:
       - key: CORS_ORIGINS
         value: http://localhost:5173
       - key: DATABASE_URL
-        value: sqlite:///./psms.db
+        fromDatabase:
+          name: covertech-psms-db
+          property: connectionString
+databases:
+  - name: covertech-psms-db
+    plan: free
+    databaseName: covertech_psms
+    user: covertech_psms_user

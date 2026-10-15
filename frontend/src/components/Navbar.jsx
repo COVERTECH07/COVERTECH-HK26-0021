@@ -1,10 +1,7 @@
 import { Bell, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
-  const { user } = useAuth();
-
   return (
     <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -17,8 +14,8 @@ export default function Navbar() {
             <Bell className="h-4 w-4" />
           </button>
           <div className="text-right">
-            <div className="text-sm font-medium text-slate-100">{user?.full_name || 'Demo Operator'}</div>
-            <div className="text-xs text-slate-400">{user?.role || 'admin'}</div>
+            <div className="text-sm font-medium text-slate-100">Demo Operator</div>
+            <div className="text-xs text-slate-400">admin</div>
           </div>
         </div>
       </div>

@@ -31,5 +31,5 @@ databases:
   - name: covertech-psms-db
     plan: free
     region: singapore
-    databaseName: covertech_psms
-    user: covertech_psms_user
+    databaseName: covertech_psms_db
+    user: covertech_psms_db_user

@@ -1,13 +1,4 @@
-import apiRequest from './client';
-
-export const login = (payload) => apiRequest('/auth/login', {
-  method: 'POST',
-  body: JSON.stringify(payload),
-});
-
-export const register = (payload) => apiRequest('/auth/register', {
-  method: 'POST',
-  body: JSON.stringify(payload),
-});
-
-export const getCurrentUser = () => apiRequest('/auth/me');
+// Auth temporarily disabled for hackathon judges demo.
+export const login = async () => ({ access_token: 'demo', token_type: 'bearer' });
+export const register = async () => ({ id: 0, email: 'demo@psms.local', full_name: 'Demo Operator', role: 'admin' });
+export const getCurrentUser = async () => ({ id: 0, email: 'demo@psms.local', full_name: 'Demo Operator', role: 'admin' });

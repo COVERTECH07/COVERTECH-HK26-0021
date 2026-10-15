@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -33,14 +35,21 @@ def seed_demo_data():
 
     db = SessionLocal()
     try:
-        if not db.query(User).filter(User.email == 'admin@psms.local').first():
-            admin = User(
-                email='admin@psms.local',
+        is_production = settings.ENVIRONMENT.lower() == 'production'
+        admin_email = os.getenv('ADMIN_EMAIL', '' if is_production else 'admin@psms.local').strip().lower()
+        admin_password = os.getenv('ADMIN_PASSWORD', '' if is_production else 'admin123')
+
+        # Production admin credentials must be supplied privately through deployment
+        # environment variables. Never ship a known default administrator password.
+        if admin_email and admin_password and not db.query(User).filter(User.email == admin_email).first():
+            from .auth import get_password_hash
+
+            db.add(User(
+                email=admin_email,
                 full_name='System Administrator',
-                password_hash='$2b$12$Sle59BqAXaF.O1AvuLyqz.n9jQ6y5WGQvVRaZM08hf0FqjUAua46i',
+                password_hash=get_password_hash(admin_password),
                 role='admin',
-            )
-            db.add(admin)
+            ))
 
         if not db.query(Camera).first():
             db.add_all(

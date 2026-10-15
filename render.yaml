@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: covertech-psms-api
+    name: covertech-psms-api-prod
     runtime: python
     plan: free
     region: singapore
@@ -8,6 +8,7 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
+    autoDeployTrigger: commit
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.14
@@ -17,10 +18,15 @@ services:
         value: production
       - key: CORS_ORIGINS
         value: http://localhost:5173,https://covertech-psms.vercel.app
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: DATABASE_URL
         fromDatabase:
           name: covertech-psms-db
           property: connectionString
+
 databases:
   - name: covertech-psms-db
     plan: free

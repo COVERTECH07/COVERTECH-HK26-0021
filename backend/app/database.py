@@ -7,10 +7,17 @@ from .config import settings
 
 Base = declarative_base()
 
-if settings.DATABASE_URL.startswith('sqlite'):
-    engine = create_engine(settings.DATABASE_URL, connect_args={'check_same_thread': False})
+# Render's connectionString may use postgres://; SQLAlchemy expects postgresql://.
+database_url = settings.DATABASE_URL
+if database_url.startswith('postgres://'):
+    database_url = 'postgresql+psycopg2://' + database_url[len('postgres://'):]
+elif database_url.startswith('postgresql://'):
+    database_url = 'postgresql+psycopg2://' + database_url[len('postgresql://'):]
+
+if database_url.startswith('sqlite'):
+    engine = create_engine(database_url, connect_args={'check_same_thread': False})
 else:
-    engine = create_engine(settings.DATABASE_URL)
+    engine = create_engine(database_url, pool_pre_ping=True)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

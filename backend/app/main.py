@@ -34,6 +34,16 @@ def startup_event():
     create_db_and_tables()
 
 
+@app.get("/")
+def root():
+    return {
+        "status": "ok",
+        "service": settings.APP_NAME,
+        "health": "/health",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": settings.APP_NAME}

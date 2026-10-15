@@ -7,7 +7,6 @@ from .config import settings
 
 Base = declarative_base()
 
-# Render's connectionString may use postgres://; SQLAlchemy expects postgresql://.
 database_url = settings.DATABASE_URL
 if database_url.startswith('postgres://'):
     database_url = 'postgresql+psycopg2://' + database_url[len('postgres://'):]
@@ -34,7 +33,11 @@ def create_db_and_tables():
     from .models import Camera, Incident, User
 
     Base.metadata.create_all(bind=engine)
-    seed_demo_data()
+    try:
+        seed_demo_data()
+    except Exception as exc:
+        # Never block API startup because of seed issues
+        print(f'[seed] skipped: {exc}')
 
 
 def seed_demo_data():
@@ -46,8 +49,6 @@ def seed_demo_data():
         admin_email = os.getenv('ADMIN_EMAIL', '' if is_production else 'admin@psms.local').strip().lower()
         admin_password = os.getenv('ADMIN_PASSWORD', '' if is_production else 'admin123')
 
-        # Production admin credentials must be supplied privately through deployment
-        # environment variables. Never ship a known default administrator password.
         if admin_email and admin_password and not db.query(User).filter(User.email == admin_email).first():
             from .auth import get_password_hash
 
@@ -59,64 +60,60 @@ def seed_demo_data():
             ))
 
         if not db.query(Camera).first():
-            db.add_all(
-                [
-                    Camera(
-                        name='North Gate',
-                        location='North Gate',
-                        url='rtsp://camera-01.local/stream',
-                        latitude=12.9716,
-                        longitude=77.5946,
-                        is_active=True,
-                    ),
-                    Camera(
-                        name='Main Lobby',
-                        location='Main Lobby',
-                        url='rtsp://camera-02.local/stream',
-                        latitude=12.9723,
-                        longitude=77.5958,
-                        is_active=True,
-                    ),
-                    Camera(
-                        name='Parking Annex',
-                        location='Parking Annex',
-                        url='rtsp://camera-03.local/stream',
-                        latitude=12.9709,
-                        longitude=77.5934,
-                        is_active=True,
-                    ),
-                ]
-            )
+            db.add_all([
+                Camera(
+                    name='North Gate',
+                    location='North Gate',
+                    url='rtsp://camera-01.local/stream',
+                    latitude=12.9716,
+                    longitude=77.5946,
+                    is_active=True,
+                ),
+                Camera(
+                    name='Main Lobby',
+                    location='Main Lobby',
+                    url='rtsp://camera-02.local/stream',
+                    latitude=12.9723,
+                    longitude=77.5958,
+                    is_active=True,
+                ),
+                Camera(
+                    name='Parking Annex',
+                    location='Parking Annex',
+                    url='rtsp://camera-03.local/stream',
+                    latitude=12.9709,
+                    longitude=77.5934,
+                    is_active=True,
+                ),
+            ])
 
         if not db.query(Incident).first():
-            db.add_all(
-                [
-                    Incident(
-                        title='Crowd build-up detected',
-                        description='Unusual density near the north entry gate.',
-                        severity='high',
-                        category='crowd_density',
-                        status='open',
-                        latitude=12.9721,
-                        longitude=77.5949,
-                        confidence=0.86,
-                        camera_id=1,
-                        snapshot_url='/storage/snapshots/north_gate.jpg',
-                    ),
-                    Incident(
-                        title='Fall event',
-                        description='A person was detected falling in the lobby.',
-                        severity='critical',
-                        category='fall',
-                        status='pending_verification',
-                        latitude=12.9722,
-                        longitude=77.5957,
-                        confidence=0.91,
-                        camera_id=2,
-                        snapshot_url='/storage/snapshots/lobby_fall.jpg',
-                    ),
-                ]
-            )
+            db.add_all([
+                Incident(
+                    title='Crowd build-up detected',
+                    description='Unusual density near the north entry gate.',
+                    severity='high',
+                    category='crowd_density',
+                    status='open',
+                    latitude=12.9721,
+                    longitude=77.5949,
+                    confidence=0.86,
+                    camera_id=1,
+                    snapshot_url='/storage/snapshots/north_gate.jpg',
+                ),
+                Incident(
+                    title='Fall event',
+                    description='A person was detected falling in the lobby.',
+                    severity='critical',
+                    category='fall',
+                    status='pending_verification',
+                    latitude=12.9722,
+                    longitude=77.5957,
+                    confidence=0.91,
+                    camera_id=2,
+                    snapshot_url='/storage/snapshots/lobby_fall.jpg',
+                ),
+            ])
 
         db.commit()
     finally:

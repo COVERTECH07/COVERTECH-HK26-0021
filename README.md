@@ -7,7 +7,7 @@ Public Safety Monitoring System (PSMS) is an AI-powered real-time surveillance p
 - **Frontend:** [https://covertech-psms.vercel.app/](https://covertech-psms.vercel.app/)
 - **Backend API:** [https://covertech-psms-api-prod.onrender.com](https://covertech-psms-api-prod.onrender.com)
 
-> **First-time users:** Use the **Create account** option on the login page to register a new account, then sign in.
+> **Judges / demo:** Login is temporarily disabled. Open the link above and the dashboard loads directly (no sign-in required).
 
 ## Overview
 
@@ -39,7 +39,7 @@ Camera Streams --> Video Ingest --> Pose Engine --> Detectors (Fall, Crowd, Exit
 - AI/CV: Ultralytics YOLOv8-pose, PyTorch, OpenCV, NumPy, SciPy
 - Frontend: React 18, Vite, TailwindCSS, Recharts, Leaflet, react-leaflet
 - Realtime: WebSockets (FastAPI native)
-- Auth: JWT (python-jose) and bcrypt (passlib)
+- Auth: JWT (python-jose) and bcrypt (passlib) — temporarily optional for demo
 - Deploy: Docker and docker-compose
 
 ## Quick Start
@@ -57,7 +57,7 @@ Prerequisites: Docker and docker-compose
    docker-compose up --build
    ```
 
-3. Open the frontend at http://localhost:5173 and create an account (or use local defaults if configured)
+3. Open the frontend at http://localhost:5173 — dashboard opens directly (auth bypassed for demo)
 
 ## Manual Setup
 
@@ -81,37 +81,25 @@ Prerequisites: Docker and docker-compose
 - `JWT_ALGORITHM`: Algorithm for JWT (e.g. HS256)
 - `ACCESS_TOKEN_EXPIRE_MINUTES`: Access token lifetime in minutes
 - `ENVIRONMENT`: `development` or `production`
-- `ADMIN_EMAIL` / `ADMIN_PASSWORD`: Optional admin seed credentials (required in production if you want a pre-created admin)
-- `CAMERA_SAMPLE_FPS`: Sampling FPS for ingested camera streams
-- `FALL_SCORE_THRESHOLD`: Fall score threshold for alerts
-- `FALL_COOLDOWN_SECONDS`: Cooldown seconds per track after a fall alert
-- `IMMOBILITY_SECONDS`: Seconds to consider a track immobile for fall confirmation
-- `CROWD_DENSITY_THRESHOLD`: People per cell threshold to declare overcrowding
-- `BLOCKED_EXIT_SECONDS`: Seconds of persistence in an exit ROI to mark blocked exit
-- `PRIVACY_MODE`: Enable privacy filters (true/false)
-- `SNAPSHOT_DIR`: Directory for storing privacy-filtered snapshots
-- `YOLO_MODEL_PATH` / `MODEL_PATH`: Path to yolov8-pose model file
+- `ADMIN_EMAIL` / `ADMIN_PASSWORD`: Optional admin seed credentials
 - `CORS_ORIGINS`: Allowed frontend origins
+- `MODEL_PATH`: Path to yolov8-pose model file
 
 ## API Endpoints
 
-- `POST /auth/register` — Create a new user account
-- `POST /auth/login` — Login and receive JWT
-- `GET /auth/me` — Current user profile
 - `GET /health` — Health check
-- Cameras CRUD under `/cameras`
-- Incidents endpoints under `/incidents`
-- Analytics endpoints under `/analytics`
+- Cameras under `/cameras`
+- Incidents under `/incidents`
+- Analytics under `/analytics`
 - WebSocket alerts at `/ws/alerts`
 
 ## Demo Script for Judges
 
 1. Open the live demo: [https://covertech-psms.vercel.app/](https://covertech-psms.vercel.app/)
-2. Click **Create account**, register with your email and password, then sign in
-3. Navigate to Live Monitor to view camera feeds and overlays
-4. Use a test feed or recorded video to simulate a fall, overcrowding, or blocked exit
-5. Observe the real-time alert toast and perform human verification on the Incidents page
-6. Review analytics and heatmap views for aggregated data
+2. Dashboard opens immediately — no login required
+3. Navigate Live Monitor, Incidents, Analytics, and Heatmap from the sidebar
+4. Review camera feeds, risk zones, and sample incident data
+5. Explore analytics summaries and heatmap views
 
 ## Team
 

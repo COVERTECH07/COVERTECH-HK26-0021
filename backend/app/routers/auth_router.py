@@ -16,11 +16,13 @@ def register_user(payload: UserCreate, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == payload.email).first()
     if existing:
         raise HTTPException(status_code=400, detail='Email already registered')
+    # Never trust a role supplied by an unauthenticated registration request.
+    # Privileged roles must be granted through a separate, authorized admin flow.
     user = User(
         email=payload.email,
         full_name=payload.full_name,
         password_hash=get_password_hash(payload.password),
-        role=payload.role,
+        role='security',
     )
     db.add(user)
     db.commit()

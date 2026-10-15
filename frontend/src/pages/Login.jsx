@@ -28,7 +28,6 @@ export default function Login() {
         await register({ full_name: fullName.trim(), email: email.trim(), password });
       }
 
-      // Registration creates the account; then use the same login flow for both modes.
       const payload = await login({ email: email.trim(), password });
       const profileResponse = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${payload.access_token}` },
@@ -93,12 +92,15 @@ export default function Login() {
             {isSubmitting ? 'Please wait…' : isRegistering ? 'Create account' : 'Sign in'}
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-slate-400">
-          {isRegistering ? 'Already have an account?' : "Don't have an account?"}{' '}
-          <button type="button" onClick={switchMode} className="font-semibold text-cyan-400 hover:text-cyan-300">
-            {isRegistering ? 'Sign in' : 'Create account'}
+        <div className="mt-6 border-t border-slate-800 pt-5 text-center">
+          <p className="text-sm font-medium text-slate-200">
+            {isRegistering ? 'Already registered?' : 'First time here?'}
+          </p>
+          <button type="button" onClick={switchMode}
+            className="mt-2 inline-flex min-h-11 items-center justify-center rounded-xl border border-cyan-500/60 px-5 py-2 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/10 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            {isRegistering ? 'Back to sign in' : 'Create a new account'}
           </button>
-        </p>
+        </div>
       </div>
     </div>
   );

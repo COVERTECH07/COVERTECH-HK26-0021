@@ -14,8 +14,11 @@ class Settings:
     CORS_ORIGINS: list[str] = field(default_factory=lambda: [
         item.strip() for item in os.getenv('CORS_ORIGINS', 'http://localhost:5173').split(',') if item.strip()
     ])
-    MODEL_PATH: str = os.getenv('MODEL_PATH', 'models/yolov8n-pose.pt')
+    MODEL_PATH: str = os.getenv('MODEL_PATH', 'yolov8n-pose.pt')
     MAX_RETENTION_DAYS: int = int(os.getenv('MAX_RETENTION_DAYS', '7'))
 
 
 settings = Settings()
+
+if settings.ENVIRONMENT.lower() == 'production' and settings.SECRET_KEY == 'dev-secret-key-change-me':
+    raise RuntimeError('SECRET_KEY must be configured with a strong random value in production.')

@@ -1,16 +1,6 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Outlet } from 'react-router-dom';
 
+// Auth temporarily disabled for judges demo — always render child routes.
 export default function ProtectedRoute() {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-300">Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
   return <Outlet />;
 }

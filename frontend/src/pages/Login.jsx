@@ -23,24 +23,36 @@ export default function Login() {
     event.preventDefault();
     setError('');
     setIsSubmitting(true);
+    const normalizedEmail = email.trim().toLowerCase();
+
     try {
       if (isRegistering) {
-        await register({ full_name: fullName.trim(), email: email.trim(), password });
+        await register({ full_name: fullName.trim(), email: normalizedEmail, password });
       }
 
-      // Registration creates the account; then use the same login flow for both modes.
-      const payload = await login({ email: email.trim(), password });
+      const payload = await login({ email: normalizedEmail, password });
       const profileResponse = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${payload.access_token}` },
       });
       if (!profileResponse.ok) {
-        throw new Error('Signed in, but could not load your user profile. Please try again.');
+        let detail = '';
+        try {
+          const body = await profileResponse.json();
+          detail = body.detail || '';
+        } catch {
+          // Keep a useful fallback if the server did not return JSON.
+        }
+        throw new Error(detail || 'Login worked, but the profile could not be loaded. Please try again.');
       }
       const profile = await profileResponse.json();
       setSession(payload.access_token, profile);
       navigate('/');
     } catch (err) {
-      setError(err.message || (isRegistering ? 'Could not create your account' : 'Authentication failed'));
+      if (err instanceof TypeError && /fetch/i.test(err.message)) {
+        setError('Cannot reach the backend right now. Please wait a few seconds and try again. If this continues, the API service may be waking up or unavailable.');
+      } else {
+        setError(err.message || (isRegistering ? 'Could not create your account.' : 'Login failed. Please check your email and password.'));
+      }
     } finally {
       setIsSubmitting(false);
     }

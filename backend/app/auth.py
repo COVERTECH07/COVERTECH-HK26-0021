@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -11,7 +12,8 @@ from .database import get_db
 from .models import User
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login')
+# auto_error=False so missing token does not hard-fail (demo mode)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login', auto_error=False)
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
@@ -38,23 +40,38 @@ def authenticate_user(db: Session, email: str, password: str):
     return user
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    credentials_exception = HTTPException(status_code=401, detail='Could not validate credentials')
+class DemoUser:
+    """Lightweight stand-in when no JWT is provided (judges demo)."""
+
+    id = 0
+    email = 'demo@psms.local'
+    full_name = 'Demo Operator'
+    role = 'admin'
+
+
+def get_current_user(
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User | DemoUser:
+    """Return real user when token is valid; otherwise fall back to demo user."""
+    if not token:
+        return DemoUser()
+
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         email = payload.get('sub')
         if email is None:
-            raise credentials_exception
-    except JWTError as exc:
-        raise credentials_exception from exc
+            return DemoUser()
+    except JWTError:
+        return DemoUser()
 
     user = db.query(User).filter(User.email == email).first()
     if user is None:
-        raise credentials_exception
+        return DemoUser()
     return user
 
 
-def require_admin(current_user: User = Depends(get_current_user)) -> User:
+def require_admin(current_user: User | DemoUser = Depends(get_current_user)) -> User | DemoUser:
     if current_user.role != 'admin':
         raise HTTPException(status_code=403, detail='Admin access required')
     return current_user

@@ -3,20 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = (import.meta.env.VITE_API_URL || (
+  import.meta.env.PROD
+    ? 'https://covertech-psms-api-prod.onrender.com'
+    : 'http://localhost:8000'
+)).replace(/\/$/, '');
+
 export default function Login() {
-  const [email, setEmail] = useState('admin@psms.local');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login: setSession } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError('');
     try {
       const payload = await login({ email, password });
-      const profileResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/auth/me`, {
+      const profileResponse = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${payload.access_token}` },
       });
+      if (!profileResponse.ok) {
+        throw new Error('Signed in, but could not load your user profile. Please try again.');
+      }
       const profile = await profileResponse.json();
       setSession(payload.access_token, profile);
       navigate('/');
@@ -34,14 +44,18 @@ export default function Login() {
         </div>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100" />
+            <label className="mb-1 block text-sm text-slate-300" htmlFor="email">Email</label>
+            <input id="email" name="email" type="email" autoComplete="username" required
+              value={email} onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100" />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100" />
+            <label className="mb-1 block text-sm text-slate-300" htmlFor="password">Password</label>
+            <input id="password" name="password" type="password" autoComplete="current-password" required
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100" />
           </div>
-          {error && <div className="text-sm text-red-400">{error}</div>}
+          {error && <div role="alert" className="text-sm text-red-400">{error}</div>}
           <button type="submit" className="w-full rounded-xl bg-cyan-500 px-4 py-3 font-semibold text-slate-950">
             Sign in
           </button>

@@ -11,19 +11,23 @@ from .config import settings
 from .database import get_db
 from .models import User
 
-# PBKDF2 avoids bcrypt's 72-byte input limit during production demo-user seeding.
-# Keep bcrypt enabled to verify existing bcrypt hashes; new hashes use PBKDF2.
-pwd_context = CryptContext(schemes=['pbkdf2_sha256', 'bcrypt'], deprecated='auto')
-# auto_error=False so missing token does not hard-fail (demo mode)
+# PBKDF2 only — avoids bcrypt/passlib "password cannot be longer than 72 bytes"
+# crash that breaks Render deploys with bcrypt>=4.1.
+pwd_context = CryptContext(schemes=['pbkdf2_sha256'], deprecated='auto')
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login', auto_error=False)
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(password, hashed_password)
+    try:
+        return pwd_context.verify(password, hashed_password)
+    except Exception:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    # Guard against accidental huge secrets from env vars
+    safe = (password or '')[:128]
+    return pwd_context.hash(safe)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
@@ -43,8 +47,6 @@ def authenticate_user(db: Session, email: str, password: str):
 
 
 class DemoUser:
-    """Lightweight stand-in when no JWT is provided (judges demo)."""
-
     id = 0
     email = 'demo@psms.local'
     full_name = 'Demo Operator'
@@ -55,7 +57,6 @@ def get_current_user(
     token: Optional[str] = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User | DemoUser:
-    """Return real user when token is valid; otherwise fall back to demo user."""
     if not token:
         return DemoUser()
 

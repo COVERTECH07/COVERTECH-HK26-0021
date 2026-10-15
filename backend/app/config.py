@@ -12,10 +12,18 @@ class Settings:
     DATABASE_URL: str = os.getenv('DATABASE_URL', 'sqlite:///./psms.db')
     ENVIRONMENT: str = os.getenv('ENVIRONMENT', 'development')
     CORS_ORIGINS: list[str] = field(default_factory=lambda: [
-        item.strip() for item in os.getenv('CORS_ORIGINS', 'http://localhost:5173').split(',') if item.strip()
+        item.strip().rstrip('/')
+        for item in os.getenv('CORS_ORIGINS', 'http://localhost:5173').split(',')
+        if item.strip()
     ])
     MODEL_PATH: str = os.getenv('MODEL_PATH', 'models/yolov8n-pose.pt')
     MAX_RETENTION_DAYS: int = int(os.getenv('MAX_RETENTION_DAYS', '7'))
 
 
 settings = Settings()
+
+if settings.ENVIRONMENT.lower() == 'production':
+    if settings.SECRET_KEY == 'dev-secret-key-change-me' or len(settings.SECRET_KEY) < 32:
+        raise RuntimeError('Set SECRET_KEY to a strong random value of at least 32 characters in production.')
+    if settings.DATABASE_URL.startswith('sqlite'):
+        raise RuntimeError('Production requires DATABASE_URL to point to a persistent database.')

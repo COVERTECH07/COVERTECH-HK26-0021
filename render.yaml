@@ -15,7 +15,9 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: CORS_ORIGINS
-        value: http://localhost:5173
+        value: http://localhost:5173,http://localhost:4173
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "120"
       - key: DATABASE_URL
         fromDatabase:
           name: covertech-psms-db

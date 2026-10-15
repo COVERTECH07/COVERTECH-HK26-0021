@@ -11,7 +11,9 @@ from .config import settings
 from .database import get_db
 from .models import User
 
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+# PBKDF2 avoids bcrypt's 72-byte input limit during production demo-user seeding.
+# Keep bcrypt enabled to verify existing bcrypt hashes; new hashes use PBKDF2.
+pwd_context = CryptContext(schemes=['pbkdf2_sha256', 'bcrypt'], deprecated='auto')
 # auto_error=False so missing token does not hard-fail (demo mode)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login', auto_error=False)
 
